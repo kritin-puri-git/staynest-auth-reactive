@@ -6,9 +6,10 @@ import com.project.staynest.auth.persistence.db.r2dbc.model.UserData;
 public final class UsersEntityMapper {
     private UsersEntityMapper(){}
 
-    public static UsersEntity from(UserData userData){
+    public static UsersEntity from(long userLookupId, UserData userData){
         return UsersEntity
                 .builder()
+                .userLookupId(userLookupId)
                 .publicId(userData.encryptedPublicId())
                 .username(userData.encryptedUsername())
                 .email(userData.encryptedEmail())

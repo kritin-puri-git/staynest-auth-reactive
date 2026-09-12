@@ -41,16 +41,21 @@ public class MysqlSignupRepositoryAdapter implements SignupRepositoryPort {
             return this.usersLookupRepository.save(usersLookupEntity)
                     .flatMap(savedLookup ->{
                         UsersEntity usersEntity = UsersEntityMapper.from(
+                                savedLookup.getId(),
                                 userData
                         );
 
-                        usersEntity.setUserLookupId(savedLookup.getId());
+                        usersEntity.setIsNew(true);
 
-                        return this.usersRepository.save(usersEntity);
+                        return this.usersRepository.save(usersEntity)
+                                .flatMap(usersEntity1 -> {
+                                    usersEntity.setIsNew(false);
+                                    return Mono.empty();
+                                })
+                                ;
 
                     });
-        })
-                .then();
+        });
     }
 
     @Override

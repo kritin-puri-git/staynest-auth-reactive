@@ -13,6 +13,7 @@ import org.springframework.data.redis.core.script.RedisScript;
 import org.springframework.stereotype.Component;
 import reactor.core.publisher.Mono;
 
+import java.util.Base64;
 import java.util.List;
 
 @Component
@@ -47,8 +48,8 @@ public final class RedisSignupCacheAdapter implements SignupCachePort {
             return reactiveRedisTemplate.execute(
                     saveSignupCacheScript,
                     List.of(key),
-                    signupCacheData.encryptedUsername(),
-                    signupCacheData.encryptedEmail(),
+                    Base64.getEncoder().encodeToString(signupCacheData.encryptedUsername()),
+                    Base64.getEncoder().encodeToString(signupCacheData.encryptedEmail()),
                     signupCacheData.encryptionKeyId(),
                     signupCacheData.encryptionVersion(),
                     signupCacheData.ttl()
@@ -94,10 +95,10 @@ public final class RedisSignupCacheAdapter implements SignupCachePort {
                     .multiGet(
                             key,
                             List.of(
-                                    "hashedUsername",
-                                    "hashedEmail",
-                                    "hashingKeyId",
-                                    "hashingVersion"
+                                    "encryptedUsername",
+                                    "encryptedEmail",
+                                    "encryptionKeyId",
+                                    "encryptionVersion"
                             )
                     )
                     .switchIfEmpty(Mono.error(new UnexpectedIllegalStateException(
@@ -116,6 +117,7 @@ public final class RedisSignupCacheAdapter implements SignupCachePort {
                         }
 
                         if(signupCacheDataList.contains(null)){
+                            System.out.println(signupCacheDataList);
                             return Mono.error(new UnexpectedIllegalStateException(
                                     "Corrupted signup cache data found while fetching. Fields found null"
                             ));
@@ -126,12 +128,15 @@ public final class RedisSignupCacheAdapter implements SignupCachePort {
                         Object encryptionKeyIdObject = signupCacheDataList.get(2);
                         Object encryptionVersionObject = signupCacheDataList.get(3);
 
-                        if (!(encryptedUsernameObject instanceof byte[] encryptedUsername) ||
-                                !(encryptedEmailObject instanceof byte[] encryptedEmail)) {
+                        if (!(encryptedUsernameObject instanceof String encodedUsername) ||
+                                !(encryptedEmailObject instanceof String encodedEmail)) {
                             return Mono.error(new UnexpectedIllegalStateException(
-                                    "Corrupted signup cache data. Invalid encrypted byte's data type."
+                                    "Corrupted signup cache data. Invalid data."
                             ));
                         }
+
+                        byte[] encryptedUsername = Base64.getDecoder().decode(encodedUsername);
+                        byte[] encryptedEmail = Base64.getDecoder().decode(encodedEmail);
 
                         if (!(encryptionKeyIdObject instanceof Number encryptionKeyIdNumber) ||
                                 !(encryptionVersionObject instanceof Number encryptionVersionNumber)) {

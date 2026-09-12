@@ -1,9 +1,12 @@
 package com.project.staynest.auth.persistence.db.r2dbc.entity;
 
 import com.project.staynest.auth.errorhandling.exceptions.unexpected.UnexpectedIllegalStateException;
+import org.jspecify.annotations.Nullable;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.annotation.Transient;
+import org.springframework.data.domain.Persistable;
 import org.springframework.data.relational.core.mapping.Column;
 import org.springframework.data.relational.core.mapping.Table;
 
@@ -11,7 +14,7 @@ import java.time.Instant;
 import java.util.Arrays;
 
 @Table("users")
-public class UsersEntity {
+public class UsersEntity implements Persistable<Long> {
 
     @Id
     @Column("lookup_id")
@@ -164,6 +167,23 @@ public class UsersEntity {
 
     public Instant getUpdatedAt(){
         return this.updatedAt;
+    }
+
+    @Override
+    public @Nullable Long getId() {
+        return this.userLookupId;
+    }
+
+    @Transient
+    private boolean isNew = false;
+
+    public void setIsNew(boolean isNew){
+        this.isNew = isNew;
+    }
+
+    @Override
+    public boolean isNew() {
+        return isNew;
     }
 
     public static class Builder{

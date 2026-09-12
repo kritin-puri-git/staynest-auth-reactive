@@ -11,9 +11,6 @@ import java.util.Arrays;
 @Table("users_lookup")
 public class UsersLookupEntity {
 
-
-
-
     @Id
     @Column("id")
     private Long id;

@@ -72,6 +72,8 @@ public class GlobalExceptionHandler {
 
             return handleBaseRuntimeException(new EmailAlreadyExistsException());
         }
+
+        System.out.println("DIV:" + ex);
         return ResponseEntity.status(HttpStatus.CONFLICT).body(
                 ApiResponseDTO.error(
                         "Authentication Error",
@@ -86,6 +88,8 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponseDTO<ErrorResponseDTO>> handleBaseRuntimeException(
             BaseRuntimeException ex
     ){
+
+        System.out.println("BASE_RUN:" + ex);
 
         return ResponseEntity.status(ex.getHttpStatus()).body(
                 ApiResponseDTO.error(
