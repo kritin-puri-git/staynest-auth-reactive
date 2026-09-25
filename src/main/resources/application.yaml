@@ -3,7 +3,7 @@ server:
 
 spring:
   application:
-    name: staynest-backend
+    name: staynest-auth-reactive
 
   config:
     import:
